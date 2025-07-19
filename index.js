@@ -21,7 +21,7 @@ form.addEventListener("submit", function (e){
     fetchWeatherData(location);  
 });
 
-function fetchWeatherData(location) {
+/*function fetchWeatherData(location) {
     // Build URL to request weather data
     var apiKey = "721783f86b3969993c78fb01e288d8f7";
     var weatherURL = "https://api.openweathermap.org/data/2.5/weather";
@@ -44,64 +44,99 @@ function fetchWeatherData(location) {
         .catch((error) => {
             showError();
         });
+}*/
+
+// Convert function to arrow function
+const fetchWeatherData = async (location) => {
+        // Build URL to request weather data
+    const apiKey = "721783f86b3969993c78fb01e288d8f7";
+    const weatherURL = "https://api.openweathermap.org/data/2.5/weather";
+    const queryString = `?units=imperial&appid=${apiKey}&q=${location}`;
+    const url = weatherURL + queryString;
+
+    try {
+        const response = await fetch(url) //async/await
+        if (!response.ok) {
+            throw new Error("Location not found");
+        }
+        const data = await response.json();
+        showWeatherInfo(data);
+    } catch (error) {
+        showError();
+    }
 }
+
 // Function to display weather data
-function showWeatherInfo(data) {
-    var weatherSection = document.getElementById("weather");
+//function showWeatherInfo(data) {
+const showWeatherInfo = (data) => {
     // clear data
     weatherSection.innerHTML = "";
 
     // Create elements and add:
-    var location = document.createElement("h2");
-    location.textContent = `${data.name}, ${data.sys.country}`; 
-    weatherSection.appendChild(location);
-    // <a>link to Google Maps using coords
-    var lat = data.coord.lat;
-    var lon = data.coord.lon;
+    const { name, sys: { country } } = data;
 
-    var mapLink = document.createElement("a");
+    const location = document.createElement("h2");
+    location.textContent = `${name}, ${country}`; 
+    weatherSection.appendChild(location);
+
+    // <a>link to Google Maps using coords
+    /*var lat = data.coord.lat;
+    var lon = data.coord.lon;*/
+    const { coord: { lat, lon } } = data;
+
+    const mapLink = document.createElement("a");
     mapLink.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
     mapLink.textContent = "Click to view map";
     mapLink.target = "_blank";
     weatherSection.appendChild(mapLink);
-    // <img> for weather icon using icon code
-    var weatherIconCode = data.weather[0].icon;
-    var weatherIconUrl = "https://openweathermap.org/img/wn/" + weatherIconCode + "@2x.png";
 
-    var weatherIconImg = document.createElement("img");
+    // <img> for weather icon using icon code
+    const weatherIconCode = data.weather[0].icon;
+    const weatherIconUrl = "https://openweathermap.org/img/wn/" + weatherIconCode + "@2x.png";
+
+    const weatherIconImg = document.createElement("img");
     weatherIconImg.src = weatherIconUrl;
     weatherSection.appendChild(weatherIconImg);
+
     // <p> with weather description
-    var description = document.createElement("p");
-    description.textContent = data.weather[0].description;
-    description.style.textTransform = "capitalize";
-    weatherSection.appendChild(description);
+    const [{ description }] = data.weather;
+    const descriptionElement = document.createElement("p");
+    descriptionElement.textContent = description;
+    descriptionElement.style.textTransform = "capitalize";
+    weatherSection.appendChild(descriptionElement);
+
     // <p> with actual temp
-    var actualTemp = document.createElement("p");
-    actualTemp.textContent = `Current: ${data.main.temp}° F`;
+    //var actualTemp = document.createElement("p");
+    const { temp, feels_like } = data.main;
+
+    const actualTemp = document.createElement("p");
+    actualTemp.textContent = `Current: ${temp}° F`;
     weatherSection.appendChild(actualTemp);
+
     // <p> feels like temp
-    var feelsLikeTemp = document.createElement("p");
-    feelsLikeTemp.textContent = `Feels like: ${data.main.feels_like}° F`;
+    const feelsLikeTemp = document.createElement("p");
+    feelsLikeTemp.textContent = `Feels like: ${feels_like}° F`;
     weatherSection.appendChild(feelsLikeTemp);
+
     // <p> with "Last updated: timeString"
-    var timestamp = data.dt;
-    var date = new Date(timestamp * 1000);
-    var timeString = date.toLocaleTimeString('en-US', {
+    const timestamp = data.dt;
+    const date = new Date(timestamp * 1000);
+    const timeString = date.toLocaleTimeString('en-US', {
         hour: 'numeric',
         minute: '2-digit'
     });
-
-    var updatedTime = document.createElement("p");
+    // updated time
+    const updatedTime = document.createElement("p");
     updatedTime.textContent = `Last updated: ${timeString}`;
     weatherSection.appendChild(updatedTime);
 }
 // Show error for invalid location
-function showError() {
+//function showError() {
+const showError = () => {
     // Clear the weather section
     weatherSection.innerHTML = "";
     //add <h2> that says "location not found"
-    var errorMessage = document.createElement("h2");
+    const errorMessage = document.createElement("h2");
     errorMessage.textContent = "Location Not Found";
     weatherSection.appendChild(errorMessage);
 
